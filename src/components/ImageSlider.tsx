@@ -21,22 +21,26 @@ class ImageSlider extends Component<ImageSliderProps, ImageSliderState> {
         return (
             <div className='img'>
                 <img className='item-image' src={this.props.images[this.state.index]} alt="" />
-                <div className="slider">
-                    <i
-                        className="fa fa-angle-left fa-2x"
-                        onClick={() => {
-                            if (this.state.index === 0) return;
-                            this.setState({ ...this.state, index: this.state.index - 1 })
-                        }}
-                    ></i>
-                    <i
-                        className="fa fa-angle-right fa-2x"
-                        onClick={() => {
-                            if (this.state.index === this.props.images.length - 1) return;
-                            this.setState({ ...this.state, index: this.state.index + 1 })
-                        }}
-                    ></i>
-                </div>
+                {
+                    this.props.images.length > 1
+                        ? <div className="slider">
+                            <i
+                                className="fa fa-angle-left fa-2x"
+                                onClick={() => {
+                                    if (this.state.index === 0) return;
+                                    this.setState({ ...this.state, index: this.state.index - 1 })
+                                }}
+                            ></i>
+                            <i
+                                className="fa fa-angle-right fa-2x"
+                                onClick={() => {
+                                    if (this.state.index === this.props.images.length - 1) return;
+                                    this.setState({ ...this.state, index: this.state.index + 1 })
+                                }}
+                            ></i>
+                        </div>
+                        : undefined
+                }
             </div>
         );
     }

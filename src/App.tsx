@@ -52,16 +52,12 @@ class App extends Component<AppProps, AppState> {
     return (
       <div className='app-wrapper'>
         <div className="header">
-          <Header
-            activeCategory={this.state.activeCategory}
-            allCategories={this.state.allCategories}
-            setActiveCategory={(categoryName: string) => { this.setState({ ...this.state, activeCategory: categoryName }) }}
-          />
+          <Header />
         </div>
         <div className="body">
           <Router>
             <Routes>
-              <Route path='/' element={<Categories activeCategory={this.state.activeCategory} />} />
+              <Route path='/' element={<Categories />} />
               <Route path='/product-detail/:id' element={<ProductDetail />} />
               <Route path='/cart' element={<Cart />} />
             </Routes>

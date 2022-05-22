@@ -1,7 +1,9 @@
 import { gql } from '@apollo/client';
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { Dispatch } from 'redux';
+import { returnSelectedProductIndex } from '../components/pureFunction';
 import { Attributes } from '../models/attributes';
 import { Currency } from '../models/currency';
 import { Price } from '../models/price';
@@ -134,14 +136,16 @@ class ProductDetailComponent extends Component<ProductDetailComponentProps, Prod
         return (
             <div className="product-detail-wrapper">
                 <div className="gallery">
-                    <div
-                        className='back-to-list'
-                        onClick={() => { window.location.replace('/') }}
-                    >
-                        <i className="fa fa-long-arrow-left" aria-hidden="true"></i>
-                        {` `}
-                        <span>Back To List</span>
-                    </div>
+                    <Link to='/'>
+                        <div
+                            className='back-to-list'
+                        // onClick={() => { window.location.replace('/') }}
+                        >
+                            <i className="fa fa-long-arrow-left" aria-hidden="true"></i>
+                            {` `}
+                            <span>Back To List</span>
+                        </div>
+                    </Link>
                     {
                         this.state.product !== null
                             ? <>
@@ -187,10 +191,11 @@ class ProductDetailComponent extends Component<ProductDetailComponentProps, Prod
                                                         atrr.items.map((value: { id: string; value: string; displayValue: string; }, j: number) => {
                                                             return <div
                                                                 key={j.toString()}
+                                                                style={atrr.name === "Color" ? { backgroundColor: `${value.value}` } : undefined}
                                                                 className={`attr-item ${this.isSelected(atrr.id, value.id) ? "selected" : ""}`}
                                                                 onClick={() => this.toggleSelect(atrr.id, value.id)}
                                                             >
-                                                                {value.displayValue}
+                                                                {atrr.name === "Color" ? "" : value.displayValue}
                                                             </div>
                                                         })
                                                     }
@@ -211,24 +216,31 @@ class ProductDetailComponent extends Component<ProductDetailComponentProps, Prod
                                     }
                                 </div>
                                 {
-                                    this.state.product !== null
-                                        ? <button
+                                    this.state.product === null || this.state.product.inStock !== true
+                                        ? undefined
+                                        : <button
                                             onClick={() => {
+                                                if (this.state.product === null || this.state.product.inStock !== true) return
                                                 let copiedOrders: StoreModel['orders'] = this.props.orders.length ? [...this.props.orders] : [];
                                                 let newOrder = {
                                                     product: this.state.product!,
                                                     count: 1,
                                                     attr: this.state.selectedAttr
                                                 };
-                                                copiedOrders.push(newOrder);
-                                                this.props.ordersUpdate(copiedOrders);
-                                                debugger
-                                                window.location.replace('/')
+                                                let index: number | undefined = returnSelectedProductIndex(this.props.orders, newOrder);
+                                                if (typeof index === 'number') {
+                                                    copiedOrders[index].count = copiedOrders[index].count + 1;
+                                                    this.props.ordersUpdate(copiedOrders);
+                                                    window.location.replace('/')
+                                                } else {
+                                                    copiedOrders.push(newOrder);
+                                                    this.props.ordersUpdate(copiedOrders);
+                                                    window.location.replace('/')
+                                                }
                                             }}
                                         >
                                             ADD TO CART
                                         </button>
-                                        : undefined
                                 }
                                 <div className="description" dangerouslySetInnerHTML={{ __html: this.state.product.description }}></div>
                             </>

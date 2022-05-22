@@ -28,6 +28,7 @@
             width: 31%;
             height: max-content;
             padding: 15px;
+            cursor: pointer;
             .img-wrapper {
                 position: relative;
                 padding-bottom: 100%;
@@ -68,6 +69,15 @@
                 font-size: 18px;
                 color: #1d1f22;
             }
+            .brand{
+                display: block;
+                margin: 0;
+                font-family: "Raleway";
+                font-style: normal;
+                font-weight: 300;
+                font-size: 18px;
+                color: #1d1f22;
+            }
             .price {
                 display: block;
                 font-family: "Raleway";
@@ -76,6 +86,14 @@
                 font-size: 18px;
                 line-height: 160%;
                 color: #1d1f22;
+            }
+            .is-stock{
+                display: block;
+                margin: 0;
+                font-family: "Raleway";
+                font-style: normal;
+                font-weight: 300;
+                font-size: 16px;
             }
             &:hover {
                 box-shadow: 0px 4px 35px rgba(168, 172, 176, 0.19);

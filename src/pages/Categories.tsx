@@ -2,13 +2,32 @@ import { gql } from '@apollo/client';
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
+import { returnSelectedProductIndex } from '../components/pureFunction';
 import { Currency } from '../models/currency';
+import { Product } from '../models/product';
+import { REDUX_ACTIONS } from '../redux/actions';
 import { StoreModel } from '../redux/storeModel';
 import { client } from '../service/base';
 
 interface CategoriesProps {
     activeCategory: string;
-    activeCurrency: Currency
+    activeCurrency: Currency;
+    orders: Array<{
+        product: Product;
+        count: number;
+        attr: Array<{
+            attrId: string | number;
+            attritemId: string | number;
+        }>
+    }>;
+    ordersUpdate: (updatedOrders: Array<{
+        product: Product;
+        count: number;
+        attr: Array<{
+            attrId: string | number;
+            attritemId: string | number;
+        }>
+    }>) => void
 }
 
 interface CategoriesState {
@@ -19,7 +38,21 @@ interface CategoriesState {
             id: string;
             gallery: Array<string>;
             name: string;
-            prices: Array<{ amount: number, currency: { symbol: string } }>
+            prices: Array<{ amount: number, currency: { symbol: string; label: string } }>;
+            category: string;
+            brand: string;
+            inStock: boolean
+            description: string
+            attributes: Array<{
+                id: string;
+                name: string;
+                type: string;
+                items: Array<{
+                    id: string;
+                    value: string;
+                    displayValue: string;
+                }>,
+            }>
         }>
     }>
 }
@@ -59,15 +92,30 @@ class CategoriesComponent extends Component<CategoriesProps, CategoriesState> {
                                 gallery,
                                 name,
                                 prices{
-                                amount,
-                                currency{
-                                    symbol
+                                    amount,
+                                    currency{
+                                        label,
+                                        symbol,
+                                    },
                                 }
+                                category, 
+                                brand, 
+                                inStock, 
+                                description, 
+                                attributes{
+                                    id,
+                                    name,
+                                    type,
+                                    items{
+                                        id,
+                                        value,
+                                        displayValue,
+                                    },
+                                },
                             }
                         }
                     }
-                }
-              `
+                `
             })
             this.setState({ ...this.state, data: res.data.categories })
         } catch (error) {
@@ -87,7 +135,21 @@ class CategoriesComponent extends Component<CategoriesProps, CategoriesState> {
                                 id: string;
                                 gallery: Array<string>;
                                 name: string;
-                                prices: Array<{ amount: number, currency: { symbol: string } }>
+                                prices: Array<{ amount: number, currency: { symbol: string; label: string } }>;
+                                category: string;
+                                brand: string;
+                                inStock: boolean
+                                description: string
+                                attributes: Array<{
+                                    id: string;
+                                    name: string;
+                                    type: string;
+                                    items: Array<{
+                                        id: string;
+                                        value: string;
+                                        displayValue: string;
+                                    }>,
+                                }>
                             }>
                         }) => { return item.name === this.state.activeCategory }) !== null
                             ? this.state.data.find((item: {
@@ -96,34 +158,90 @@ class CategoriesComponent extends Component<CategoriesProps, CategoriesState> {
                                     id: string;
                                     gallery: Array<string>;
                                     name: string;
-                                    prices: Array<{ amount: number, currency: { symbol: string } }>
+                                    prices: Array<{ amount: number, currency: { symbol: string; label: string } }>;
+                                    category: string;
+                                    brand: string;
+                                    inStock: boolean;
+                                    description: string;
+                                    attributes: Array<{
+                                        id: string;
+                                        name: string;
+                                        type: string;
+                                        items: Array<{
+                                            id: string;
+                                            value: string;
+                                            displayValue: string;
+                                        }>,
+                                    }>
                                 }>
                             }) => { return item.name === this.state.activeCategory })?.products.map((product: {
                                 id: string;
                                 gallery: Array<string>;
                                 name: string;
-                                prices: Array<{ amount: number, currency: { symbol: string } }>
+                                prices: Array<{ amount: number, currency: { symbol: string; label: string } }>;
+                                category: string;
+                                brand: string;
+                                inStock: boolean
+                                description: string
+                                attributes: Array<{
+                                    id: string;
+                                    name: string;
+                                    type: string;
+                                    items: Array<{
+                                        id: string;
+                                        value: string;
+                                        displayValue: string;
+                                    }>,
+                                }>
                             }, i: number) => {
                                 return <div
                                     className='item'
                                     key={i.toString()}
+                                    onClick={() => {
+                                        window.location.replace(`/product-detail/${product.id}`)
+                                    }}
                                 >
                                     <div className="img-wrapper">
-                                        <img className='item-img' src={product.gallery[0]} alt=''/>
-                                        <div
-                                            onClick={() => {
-                                                window.location.replace(`/product-detail/${product.id}`)
-                                            }}
-                                            className="order-icon"
-                                        >
-                                            <i className="fa fa-shopping-cart fa-2x"></i>
-                                        </div>
+                                        <img className='item-img' src={product.gallery[0]} alt='' />
+                                        {
+                                            product.inStock !== true
+                                                ? undefined
+                                                : <div
+                                                    onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+                                                        event.stopPropagation();
+                                                        if (product.inStock !== true) return
+                                                        let copiedOrders: StoreModel['orders'] = this.props.orders.length ? [...this.props.orders] : [];
+                                                        let newOrder = {
+                                                            product: product,
+                                                            count: 1,
+                                                            attr: [],
+                                                        };
+                                                        let index: number | undefined = returnSelectedProductIndex(this.props.orders, newOrder)
+                                                        if (typeof index === 'number') {
+                                                            copiedOrders[index].count = copiedOrders[index].count + 1;
+                                                            this.props.ordersUpdate(copiedOrders);
+                                                        } else {
+                                                            copiedOrders.push(newOrder);
+                                                            this.props.ordersUpdate(copiedOrders);
+                                                        }
+                                                    }}
+                                                    className="order-icon"
+                                                >
+                                                    <i className="fa fa-shopping-cart fa-2x"></i>
+                                                </div>
+                                        }
                                     </div>
                                     <h6 className='name'>{product.name}</h6>
+                                    <h6 className='brand'>{product.brand}</h6>
                                     <div className='price'>
                                         {product.prices.filter((item: { amount: number, currency: { symbol: string } }) => item.currency.symbol === this.props.activeCurrency.symbol)[0].currency.symbol}
                                         {product.prices.filter((item: { amount: number, currency: { symbol: string } }) => item.currency.symbol === this.props.activeCurrency.symbol)[0].amount}
                                     </div>
+                                    {
+                                        product.inStock !== true
+                                            ? <h6 className='is-stock color-red'>Out of stock</h6>
+                                            : undefined
+                                    }
                                 </div>
                             })
                             : undefined
@@ -136,13 +254,22 @@ class CategoriesComponent extends Component<CategoriesProps, CategoriesState> {
 
 const storeToProps = (store: StoreModel) => {
     return {
-        activeCurrency: store.activeCurrency
+        orders: store.orders,
+        activeCategory: store.activeCategory,
+        activeCurrency: store.activeCurrency,
     }
 }
 
 const dispatchToProps = (dispatch: Dispatch) => {
     return {
-
+        ordersUpdate: (orders: Array<{
+            product: Product;
+            count: number;
+            attr: Array<{
+                attrId: string | number;
+                attritemId: string | number;
+            }>
+        }>) => dispatch({ type: REDUX_ACTIONS.ORDERS_UPDATE, payload: orders })
     }
 }
 

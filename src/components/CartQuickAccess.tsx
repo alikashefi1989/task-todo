@@ -73,10 +73,18 @@ class CartQuickAccessComponent extends Component<CartQuickAccessComponentProps, 
         for (let i = 0; i < this.props.orders.length; i++) {
             let count: number = this.props.orders[i].count;
             let price: number = this.props.orders[i].product.prices.filter((item: { amount: number, currency: { symbol: string } }) =>
-                    item.currency.symbol === this.props.activeCurrency.symbol)[0].amount
+                item.currency.symbol === this.props.activeCurrency.symbol)[0].amount
             total = total + (price * count);
         }
         return total;
+    }
+
+    getQTY(): number {
+        let total: number = 0;
+        for (let i = 0; i < this.props.orders.length; i++) {
+            total = total + this.props.orders[i].count;
+        }
+        return total
     }
 
     render() {
@@ -89,7 +97,7 @@ class CartQuickAccessComponent extends Component<CartQuickAccessComponentProps, 
                     <i className="fa fa-shopping-cart"></i>
                     {
                         this.props.orders.length > 0
-                            ? <div className='counter'>{this.props.orders.length}</div>
+                            ? <div className='counter'>{this.getQTY()}</div>
                             : undefined
                     }
                 </div>
@@ -135,10 +143,11 @@ class CartQuickAccessComponent extends Component<CartQuickAccessComponentProps, 
                                                                         atrr.items.map((value: { id: string; value: string; displayValue: string; }, j: number) => {
                                                                             return <div
                                                                                 key={j.toString()}
+                                                                                style={atrr.name === "Color" ? { backgroundColor: `${value.value}` } : undefined}
                                                                                 className={`attr-item ${this.isSelected(atrr.id, value.id, i) ? "selected" : ""}`}
                                                                                 onClick={() => this.toggleSelect(atrr.id, value.id, i)}
                                                                             >
-                                                                                {value.displayValue}
+                                                                                {atrr.name === "Color" ? "" : value.displayValue}
                                                                             </div>
                                                                         })
                                                                     }
@@ -155,7 +164,6 @@ class CartQuickAccessComponent extends Component<CartQuickAccessComponentProps, 
                                                         onClick={() => {
                                                             let copiedOrders = [...this.props.orders];
                                                             copiedOrders[i].count = copiedOrders[i].count + 1;
-                                                            debugger
                                                             this.props.ordersUpdate(copiedOrders);
                                                         }}
                                                     >+</div>
@@ -167,12 +175,13 @@ class CartQuickAccessComponent extends Component<CartQuickAccessComponentProps, 
                                                             let copiedOrders = [...this.props.orders];
                                                             if (copiedOrders[i].count <= 1) {
                                                                 copiedOrders.splice(i, 1);
-                                                                debugger
                                                                 this.props.ordersUpdate(copiedOrders);
                                                             } else {
                                                                 copiedOrders[i].count = copiedOrders[i].count - 1;
-                                                                debugger
                                                                 this.props.ordersUpdate(copiedOrders);
+                                                            }
+                                                            if (copiedOrders.length === 0) {
+                                                                this.setState({ ...this.state, showDropDown: false })
                                                             }
                                                         }}
                                                         className="sign"
