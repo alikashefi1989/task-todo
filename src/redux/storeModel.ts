@@ -13,4 +13,5 @@ export interface StoreModel {
     activeCurrency: Currency;
     allCategories: Array<string>
     activeCategory: string;
+    currencyDropdownStatus : boolean;
 }
