@@ -220,7 +220,8 @@ class ProductDetailComponent extends Component<ProductDetailComponentProps, Prod
                                         ? undefined
                                         : <button
                                             onClick={() => {
-                                                if (this.state.product === null || this.state.product.inStock !== true) return
+                                                if (this.state.product === null || this.state.product.inStock !== true) return;
+                                                if (this.state.product.attributes.length > 0 && this.state.selectedAttr.length !== this.state.product.attributes.length) return;
                                                 let copiedOrders: StoreModel['orders'] = this.props.orders.length ? [...this.props.orders] : [];
                                                 let newOrder = {
                                                     product: this.state.product!,
