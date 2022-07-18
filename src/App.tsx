@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import { Categories } from './pages/Categories';
 import { ProductDetail } from './pages/ProductDetail';
 import { Cart } from './pages/Cart';
@@ -7,9 +9,12 @@ import { Header } from './components/Header';
 import { client } from './service/base';
 import { gql } from '@apollo/client';
 import './assets/main.scss';
+import { StoreModel } from './redux/storeModel';
+import { REDUX_ACTIONS } from './redux/actions';
 
 interface AppProps {
-
+  showDropDown: boolean;
+  setShowDropDown: (status: boolean) => void;
 }
 
 interface AppState {
@@ -17,7 +22,7 @@ interface AppState {
   activeCategory: string;
 }
 
-class App extends Component<AppProps, AppState> {
+class AppComponent extends Component<AppProps, AppState> {
   constructor(props: AppProps) {
     super(props);
     this.state = {
@@ -50,7 +55,14 @@ class App extends Component<AppProps, AppState> {
 
   render() {
     return (
-      <div className='app-wrapper'>
+      <div
+        className='app-wrapper'
+        onClick={() => {
+          if (this.props.showDropDown) {
+            this.props.setShowDropDown(!this.props.showDropDown)
+          }
+        }}
+      >
         <div className="header">
           <Header />
         </div>
@@ -68,4 +80,16 @@ class App extends Component<AppProps, AppState> {
   }
 }
 
-export default App;
+const storeToProps = (store: StoreModel) => {
+  return {
+    showDropDown: store.currencyDropdownStatus,
+  }
+}
+
+const dispatchToProps = (dispatch: Dispatch) => {
+  return {
+    setShowDropDown: (status: boolean) => dispatch({ type: REDUX_ACTIONS.CURRENCY_DROPDOWN_STATUS_TOGGLE, payload: status })
+  }
+}
+
+export const App = connect(storeToProps, dispatchToProps)(AppComponent)

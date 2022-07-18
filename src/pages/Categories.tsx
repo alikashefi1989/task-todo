@@ -123,6 +123,26 @@ class CategoriesComponent extends Component<CategoriesProps, CategoriesState> {
         }
     }
 
+    extractDefaultAttributes(product: Product): Array<{
+        attrId: string | number;
+        attritemId: string | number;
+    }> {
+        if (!product.attributes.length) return [];
+        let attributes: Array<{
+            attrId: string | number;
+            attritemId: string | number;
+        }> = [];
+        for (let i = 0; i < product.attributes.length; i++) {
+            if (product.attributes[i].items.length) {
+                attributes.push({
+                    attrId: product.attributes[i].id,
+                    attritemId: product.attributes[i].items[0].id,
+                })
+            }
+        }
+        return attributes;
+    }
+
     render() {
         return (
             <div className='categories'>
@@ -214,7 +234,7 @@ class CategoriesComponent extends Component<CategoriesProps, CategoriesState> {
                                                         let newOrder = {
                                                             product: product,
                                                             count: 1,
-                                                            attr: [],
+                                                            attr: this.extractDefaultAttributes(product),
                                                         };
                                                         let index: number | undefined = returnSelectedProductIndex(this.props.orders, newOrder)
                                                         if (typeof index === 'number') {

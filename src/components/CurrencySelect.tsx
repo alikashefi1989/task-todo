@@ -8,13 +8,14 @@ import { StoreModel } from '../redux/storeModel';
 import { client } from '../service/base';
 
 interface CurrencySelectComponentProps {
-    activeCurrency: Currency
+    activeCurrency: Currency;
+    showDropDown: boolean;
     initialCurrencySet: (currency: Currency) => void;
+    setShowDropDown: (status: boolean) => void;
 }
 
 interface CurrencySelectComponentState {
     allCurrencies: Array<Currency>;
-    showDropDown: boolean;
 }
 
 class CurrencySelectComponent extends Component<CurrencySelectComponentProps, CurrencySelectComponentState> {
@@ -23,7 +24,6 @@ class CurrencySelectComponent extends Component<CurrencySelectComponentProps, Cu
         super(props);
         this.state = {
             allCurrencies: [],
-            showDropDown: false,
         }
     }
 
@@ -58,17 +58,17 @@ class CurrencySelectComponent extends Component<CurrencySelectComponentProps, Cu
             <div className='currency-select-wrapper'>
                 <div
                     className="current-currency"
-                    onClick={() => this.setState({ ...this.state, showDropDown: !this.state.showDropDown })}
+                    onClick={() => this.props.setShowDropDown(!this.props.showDropDown)}
                 >
                     {this.props.activeCurrency.symbol}
                     {
-                        this.state.showDropDown
+                        this.props.showDropDown
                             ? <i className="fa fa-angle-up"></i>
                             : <i className="fa fa-angle-down"></i>
                     }
                 </div>
                 {
-                    this.state.showDropDown
+                    this.props.showDropDown
                         ? <ul className="currency-list">
                             {
                                 this.state.allCurrencies.map((item: Currency, i: number) => {
@@ -76,9 +76,8 @@ class CurrencySelectComponent extends Component<CurrencySelectComponentProps, Cu
                                         className={`item ${item.symbol === this.props.activeCurrency.symbol ? "selected" : ""}`}
                                         key={i.toString()}
                                         onClick={() => {
-                                            this.setState({ ...this.state, showDropDown: !this.state.showDropDown }, () => {
-                                                this.props.initialCurrencySet(item)
-                                            })
+                                            this.props.initialCurrencySet(item);
+                                            this.props.setShowDropDown(!this.props.showDropDown);
                                         }}
                                     >
                                         {item.symbol}{` `}{item.label}
@@ -95,13 +94,15 @@ class CurrencySelectComponent extends Component<CurrencySelectComponentProps, Cu
 
 const storeToProps = (store: StoreModel) => {
     return {
-        activeCurrency: store.activeCurrency
+        activeCurrency: store.activeCurrency,
+        showDropDown: store.currencyDropdownStatus,
     }
 }
 
 const dispatchToProps = (dispatch: Dispatch) => {
     return {
-        initialCurrencySet: (currency: Currency) => dispatch({ type: REDUX_ACTIONS.ACTIVE_CURRENCY_UPDATE, payload: currency })
+        initialCurrencySet: (currency: Currency) => dispatch({ type: REDUX_ACTIONS.ACTIVE_CURRENCY_UPDATE, payload: currency }),
+        setShowDropDown: (status: boolean) => dispatch({ type: REDUX_ACTIONS.CURRENCY_DROPDOWN_STATUS_TOGGLE, payload: status })
     }
 }
 
